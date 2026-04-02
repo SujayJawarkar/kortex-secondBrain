@@ -30,6 +30,14 @@ const statusConfig = {
   failed: { icon: AlertCircle, color: "text-red-500", label: "Failed" },
 };
 
+const getHostname = (url: string) => {
+  try {
+    return new URL(url).hostname.replace("www.", "");
+  } catch {
+    return url;
+  }
+};
+
 interface Props {
   item: Item;
   onSelect?: (item: Item) => void;
@@ -86,14 +94,14 @@ export default function ItemCard({ item, onSelect }: Props) {
 
           {item.url && (
             <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              {new URL(item.url).hostname.replace("www.", "")}
+              {getHostname(item.url)}
             </p>
           )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          {item.url && (
+          {item.url && getHostname(item.url) !== item.url && (
             <Button
               variant="ghost"
               size="icon"
