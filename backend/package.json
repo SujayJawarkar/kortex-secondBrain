@@ -12,7 +12,9 @@
     "worker:ingest": "ts-node src/workers/ingest.worker.ts",
     "worker:embed": "ts-node src/workers/embed.worker.ts",
     "worker:tag": "ts-node src/workers/tag.worker.ts",
-    "worker:link": "ts-node src/workers/link.worker.ts"
+    "worker:link": "ts-node src/workers/link.worker.ts",
+    "start:workers": "node dist/workers/ingest.worker.js & node dist/workers/embed.worker.js & node dist/workers/tag.worker.js & node dist/workers/link.worker.js",
+    "start:all": "node dist/index.js & node dist/workers/ingest.worker.js & node dist/workers/embed.worker.js & node dist/workers/tag.worker.js & node dist/workers/link.worker.js"
   },
   "keywords": [],
   "author": "",
