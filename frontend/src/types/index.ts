@@ -13,6 +13,7 @@ export interface Item {
   status: "queued" | "processing" | "ready" | "failed";
   createdAt: string;
   score?: number;
+  tags?: string[];
 }
 
 export interface GraphNode {

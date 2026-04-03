@@ -46,7 +46,12 @@ export class ParserService {
     // Approximate: 1 token ≈ 4 characters
     const maxChars = maxTokens * 4;
     const overlapChars = overlapTokens * 4;
-    const minChars = 100 * 4; // 100 token minimum
+    const minChars = 10 * 4; // 10 token minimum
+    
+    // If text is short enough, return it as a single chunk to prevent skipping short notes
+    if (text.trim().length > 0 && text.length <= maxChars) {
+      return [text.trim()];
+    }
 
     const chunks: string[] = [];
     let start = 0;

@@ -33,7 +33,19 @@ export default function SaveBar() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
+
+    if (mode === "url") {
+      try {
+        new URL(trimmedInput);
+      } catch {
+        toast.error("Format Error: Please enter a valid full URL (e.g., https://example.com)");
+        return;
+      }
+    }
+
     save.mutate();
   };
 

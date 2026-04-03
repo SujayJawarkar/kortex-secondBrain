@@ -1,6 +1,6 @@
-import { eq, and, count } from "drizzle-orm";
+import { eq, and, count, inArray } from "drizzle-orm";
 import { db } from "../db";
-import { items } from "../db/schema";
+import { items, itemTags } from "../db/schema";
 import { enqueue } from "../utils/queue";
 
 const FREE_ITEM_LIMIT = 100;
@@ -71,7 +71,7 @@ export class ItemService {
   }
 
   async list(userId: string) {
-    return db
+    const results = await db
       .select({
         id: items.id,
         title: items.title,
@@ -84,6 +84,22 @@ export class ItemService {
       .from(items)
       .where(eq(items.userId, userId))
       .orderBy(items.createdAt);
+
+    if (results.length === 0) return [];
+
+    const itemIds = results.map((i) => i.id);
+    const tagsResult = await db
+      .select({ itemId: itemTags.itemId, tag: itemTags.tag })
+      .from(itemTags)
+      .where(inArray(itemTags.itemId, itemIds));
+
+    const tagMap: Record<string, string[]> = {};
+    for (const t of tagsResult) {
+      if (!tagMap[t.itemId]) tagMap[t.itemId] = [];
+      tagMap[t.itemId].push(t.tag);
+    }
+
+    return results.map(item => ({ ...item, tags: tagMap[item.id] || [] }));
   }
 
   async getById(itemId: string, userId: string) {
@@ -93,7 +109,14 @@ export class ItemService {
       .where(and(eq(items.id, itemId), eq(items.userId, userId)))
       .limit(1);
 
-    return item || null;
+    if (!item) return null;
+
+    const tagsResult = await db
+      .select({ tag: itemTags.tag })
+      .from(itemTags)
+      .where(eq(itemTags.itemId, itemId));
+
+    return { ...item, tags: tagsResult.map(t => t.tag) };
   }
 
   async delete(itemId: string, userId: string) {

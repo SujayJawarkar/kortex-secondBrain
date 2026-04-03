@@ -15,4 +15,10 @@ export const itemsApi = {
   graph: () => api.get("/graph"),
 
   related: (id: string) => api.get(`/graph/related/${id}`),
+
+  addTag: (id: string, tag: string) =>
+    api.post(`/items/${id}/tags`, { tags: [tag] }),
+
+  removeTag: (id: string, tag: string) =>
+    api.delete(`/items/${id}/tags/${tag}`),
 };

@@ -1,7 +1,7 @@
 import Groq from "groq-sdk";
 import { db } from "../db";
 import { itemTags, items } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -72,6 +72,26 @@ ${content.slice(0, 3000)}`;
         .set({ summary: result.summary })
         .where(eq(items.id, itemId));
     }
+  }
+
+  async addManualTags(itemId: string, tags: string[]) {
+    if (tags.length === 0) return;
+    await db
+      .insert(itemTags)
+      .values(
+        tags.map((tag) => ({
+          itemId,
+          tag: tag.toLowerCase().trim(),
+          score: 1.0,
+        }))
+      )
+      .onConflictDoNothing();
+  }
+
+  async removeTag(itemId: string, tag: string) {
+    await db
+      .delete(itemTags)
+      .where(and(eq(itemTags.itemId, itemId), eq(itemTags.tag, tag)));
   }
 }
 

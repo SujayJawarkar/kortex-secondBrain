@@ -2,6 +2,7 @@ import { Router, Response } from "express";
 import { authenticate } from "../middleware/auth";
 import { AuthRequest } from "../types";
 import { itemService } from "../services/item.service";
+import { tagService } from "../services/tag.service";
 import { upload } from "../config/multer";
 
 const router = Router();
@@ -112,6 +113,40 @@ router.delete("/:id", async (req: AuthRequest, res: Response) => {
   }
 
   res.json({ message: "Item deleted", id: deleted.id });
+});
+
+// POST /api/v1/items/:id/tags — manually add tags
+router.post("/:id/tags", async (req: AuthRequest, res: Response) => {
+  const { tags } = req.body;
+  if (!Array.isArray(tags)) {
+    res.status(400).json({ error: "Tags must be an array of strings" });
+    return;
+  }
+
+  const { userId } = req.user!;
+  const item = await itemService.getById(req.params.id as string, userId);
+
+  if (!item) {
+    res.status(404).json({ error: "Item not found" });
+    return;
+  }
+
+  await tagService.addManualTags(item.id, tags);
+  res.status(200).json({ message: "Tags added successfully" });
+});
+
+// DELETE /api/v1/items/:id/tags/:tag — manually delete a tag
+router.delete("/:id/tags/:tag", async (req: AuthRequest, res: Response) => {
+  const { userId } = req.user!;
+  const item = await itemService.getById(req.params.id as string, userId);
+
+  if (!item) {
+    res.status(404).json({ error: "Item not found" });
+    return;
+  }
+
+  await tagService.removeTag(item.id, req.params.tag as string);
+  res.status(200).json({ message: "Tag removed successfully" });
 });
 
 export default router;
