@@ -4,6 +4,8 @@ import { AuthRequest } from "../types";
 import { itemService } from "../services/item.service";
 import { tagService } from "../services/tag.service";
 import { upload } from "../config/multer";
+import { cloudinaryService } from "../services/cloudinary.service";
+import { parserService } from "../services/parser.service";
 
 const router = Router();
 
@@ -62,18 +64,40 @@ router.post(
     }
 
     try {
-      const result = await itemService.save(userId, plan, {
-        sourceType: "pdf",
-        title: req.file.originalname.replace(".pdf", ""),
-        fileBuffer: req.file.buffer,
-        fileName: req.file.originalname,
+      // 1. Parse PDF from memory buffer immediately (no Cloudinary download needed)
+      const { title: parsedTitle, content } = await parserService.parsePdf(req.file.buffer);
+      const chunkTexts = parserService.chunkText(content);
+
+      const itemTitle = parsedTitle && parsedTitle !== "PDF Document"
+        ? parsedTitle
+        : req.file.originalname.replace(/\.pdf$/i, "");
+
+      // 2. Upload to Cloudinary for archival storage (fire-and-forget style with error logging)
+      let cloudinaryUrl = "";
+      try {
+        cloudinaryUrl = await cloudinaryService.uploadStream(
+          req.file.buffer,
+          `kortex/pdfs/${userId}`,
+          `pdf_${Date.now()}_${req.file.originalname}`,
+        );
+      } catch (uploadErr: any) {
+        console.warn(`⚠️ Cloudinary upload failed (item still saved): ${uploadErr.message}`);
+      }
+
+      // 3. Save item with pre-parsed content — goes directly to embed queue
+      const result = await itemService.savePdf(userId, plan, {
+        title: itemTitle,
+        url: cloudinaryUrl,
+        contentMd: content,
+        chunkTexts,
       });
 
       res.status(202).json({
-        message: "PDF queued for processing",
+        message: "PDF processed and queued for embedding",
         item_id: result.item.id,
-        status: "queued",
-        estimated_ready_ms: 45000,
+        status: "processing",
+        chunks: chunkTexts.length,
+        estimated_ready_ms: chunkTexts.length * 500,
       });
     } catch (err: any) {
       res.status(400).json({ error: err.message });

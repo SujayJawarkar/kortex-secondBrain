@@ -3,6 +3,14 @@ import { api } from "./client";
 export const itemsApi = {
   save: (data: { url?: string; note?: string }) => api.post("/items", data),
 
+  uploadPdf: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api.post("/items/pdf", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
   list: () => api.get("/items"),
 
   getById: (id: string) => api.get(`/items/${id}`),

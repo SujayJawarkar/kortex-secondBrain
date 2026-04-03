@@ -1,6 +1,6 @@
 import { eq, and, count, inArray } from "drizzle-orm";
 import { db } from "../db";
-import { items, itemTags } from "../db/schema";
+import { items, itemTags, chunks } from "../db/schema";
 import { enqueue } from "../utils/queue";
 
 const FREE_ITEM_LIMIT = 100;
@@ -65,6 +65,65 @@ export class ItemService {
       sourceType: payload.sourceType,
       url: payload.url || "",
       note: payload.note || "",
+    });
+
+    return { item, duplicate: false };
+  }
+
+  /**
+   * Save a PDF item whose content is already parsed (buffer was available at upload time).
+   * Stores chunks and enqueues directly to embed, bypassing the ingest worker.
+   */
+  async savePdf(
+    userId: string,
+    plan: "free" | "pro",
+    payload: {
+      title: string;
+      url: string;       // Cloudinary URL (for archival)
+      contentMd: string;
+      chunkTexts: string[];
+    },
+  ) {
+    // Enforce free tier limit
+    if (plan === "free") {
+      const [{ value }] = await db
+        .select({ value: count() })
+        .from(items)
+        .where(eq(items.userId, userId));
+      if (Number(value) >= FREE_ITEM_LIMIT) {
+        throw new Error("Free plan limit reached. Upgrade to Pro for unlimited items.");
+      }
+    }
+
+    // Insert item with parsed content already available — mark processing immediately
+    const [item] = await db
+      .insert(items)
+      .values({
+        userId,
+        url: payload.url,
+        title: payload.title,
+        contentMd: payload.contentMd,
+        sourceType: "pdf",
+        status: "processing",
+      })
+      .returning();
+
+    // Save chunks
+    if (payload.chunkTexts.length > 0) {
+      await db.insert(chunks).values(
+        payload.chunkTexts.map((text, idx) => ({
+          itemId: item.id,
+          text,
+          chunkIdx: idx,
+        }))
+      );
+    }
+
+    // Skip ingest — go straight to embed
+    await enqueue("embed", {
+      itemId: item.id,
+      userId,
+      chunkCount: String(payload.chunkTexts.length),
     });
 
     return { item, duplicate: false };

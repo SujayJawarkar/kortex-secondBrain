@@ -40,11 +40,8 @@ async function processMessage(id: string, data: Record<string, string>) {
     } else if (sourceType === "note" && note) {
       title = note.slice(0, 60) + (note.length > 60 ? "..." : "");
       content = note;
-    } else if (sourceType === "pdf") {
-      // PDF buffer is stored in R2 — skip for now, handled separately
-      console.log(`PDF item ${itemId} — skipping parse (R2 not configured)`);
-      return;
     }
+    // Note: PDF items are parsed at upload time and enqueued directly to embed — they never arrive here.
 
     if (!content) {
       throw new Error("No content extracted");

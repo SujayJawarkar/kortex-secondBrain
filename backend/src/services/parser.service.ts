@@ -2,9 +2,7 @@ import { db } from "../db";
 import { items } from "../db/schema";
 import { eq } from "drizzle-orm";
 import fetch from "node-fetch";
-// import pdf from "pdf-parse";
-import * as pdfParse from "pdf-parse";
-const pdf = (pdfParse as any).default ?? pdfParse;
+import pdfParse from "pdf-parse";
 
 export class ParserService {
   async parseUrl(url: string): Promise<{ title: string; content: string }> {
@@ -35,7 +33,7 @@ export class ParserService {
   }
 
   async parsePdf(buffer: Buffer): Promise<{ title: string; content: string }> {
-    const data = await pdf(buffer);
+    const data = await pdfParse(buffer);
     return {
       title: data.info?.Title || "PDF Document",
       content: data.text,
