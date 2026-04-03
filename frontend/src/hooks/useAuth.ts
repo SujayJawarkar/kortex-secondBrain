@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { authApi } from "../api/auth";
@@ -7,6 +7,7 @@ import { useAuthStore } from "../store/auth.store";
 export function useLogin() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
@@ -14,6 +15,8 @@ export function useLogin() {
 
     onSuccess: (res) => {
       const { user, token } = res.data;
+      // Clear ALL cached queries from previous user before navigating
+      queryClient.clear();
       setAuth(user, token);
       toast.success("Welcome back!");
       navigate("/");
@@ -28,6 +31,7 @@ export function useLogin() {
 export function useRegister() {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
@@ -35,6 +39,8 @@ export function useRegister() {
 
     onSuccess: (res) => {
       const { user, token } = res.data;
+      // Clear ALL cached queries from previous user before navigating
+      queryClient.clear();
       setAuth(user, token);
       toast.success("Account created!");
       navigate("/");
