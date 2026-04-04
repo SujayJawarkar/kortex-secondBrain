@@ -7,6 +7,7 @@ import SearchPage from "./pages/SearchPage";
 import GraphPage from "./pages/GraphPage";
 import SettingsPage from "./pages/SettingsPage";
 import UpgradePage from "./pages/UpgradePage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const isAuth = useAuthStore((s) => s.isAuth);
@@ -78,7 +79,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

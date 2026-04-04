@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
+import { Eye, EyeOff, Loader2, Check, X, AlertCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import AuthLayout from "../components/layout/AuthLayout";
@@ -45,6 +45,12 @@ export default function RegisterPage() {
       footerHref="/login"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {register.isError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <p>{(register.error as any)?.response?.data?.error || "Registration failed. Please check your details."}</p>
+          </div>
+        )}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground">Email</label>
           <Input
