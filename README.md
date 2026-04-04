@@ -35,7 +35,7 @@ It is a **knowledge engine** — a system that understands what you save, connec
 ---
 
 ## Features
-Note: There are still some features that are not implemented yet,
+> Note: There are still some features that are not implemented yet,
 
 ### Free Tier
 
@@ -332,7 +332,7 @@ Embed Worker
 - [ ] Item detail drawer
 - [ ] Daily resurfacing digest
 - [ ] Razorpay billing
-- [ ] Browser extension (Chrome)
+- [x] Browser extension (Chrome)
 - [ ] YouTube transcript ingestion
 - [ ] AI chat over knowledge base (RAG)
 - [ ] Team workspaces
@@ -371,6 +371,75 @@ frontend/
 │   └── types/           # shared TypeScript types
 └── package.json
 ```
+---
+## Browser Extension
+
+Kortex ships with a Chrome extension that lets you save any webpage or write
+a quick note without switching tabs.
+
+### Installation
+
+> The extension is not yet on the Chrome Web Store. Install it manually
+> using the unpacked folder method.
+
+1. Open Chrome and go to `chrome://extensions`
+
+2. Enable **Developer mode** using the toggle in the top-right corner
+
+3. Click on **Load unpacked** and select the extension folder path.
+
+4. The Kortex icon will appear in your browser toolbar
+   (pin it for easy access — click the puzzle icon → pin Kortex)
+
+---
+
+### Sign In
+
+On first launch the extension will ask you to sign in.
+
+1. Click the Kortex icon in the toolbar
+2. Enter the same email and password you use on the Kortex web app
+3. Click **Sign in**
+4. You will stay signed in across browser sessions
+
+> Don't have an account? Create one free at
+> [Kortex](https://kortex-frontend-mocha.vercel.app/)
+
+---
+
+### Save the Current Page
+
+1. Open any webpage you want to save
+2. Click the Kortex icon in the toolbar
+3. The current tab's URL and title are auto-filled
+4. Click **Save** — the page is queued for processing instantly
+5. Open the Kortex dashboard to see it appear in real time
+
+---
+
+### Save a Manual Note
+
+1. Click the Kortex icon in the toolbar
+2. Switch to the **Note** tab
+3. Type or paste your note
+4. Click **Save**
+
+
+
+---
+
+### Troubleshooting
+
+**Extension not saving?**
+Make sure you are signed in — click the icon and check if the sign-in
+screen appears.
+
+**"Invalid token" error?**
+Sign out and sign back in. Tokens expire after 7 days.
+
+**Page saved but not appearing on dashboard?**
+Check your internet connection. Processing takes up to 15 seconds for URLs.
+The item will appear automatically once ready.
 
 ---
 
