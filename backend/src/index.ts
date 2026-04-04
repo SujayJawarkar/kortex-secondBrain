@@ -16,6 +16,8 @@ import { startWorker as startIngestWorker } from "./workers/ingest.worker";
 import { startWorker as startEmbedWorker } from "./workers/embed.worker";
 import { startWorker as startTagWorker } from "./workers/tag.worker";
 import { startWorker as startLinkWorker } from "./workers/link.worker";
+import { startWorker as startResurfaceWorker } from "./workers/resurface.worker";
+import { startWorker as startDigestWorker } from "./workers/digest.worker";
 
 const app = express();
 
@@ -65,5 +67,7 @@ app.listen(env.port, () => {
   );
   startTagWorker().catch((err) => console.error("Tag worker crashed:", err));
   startLinkWorker().catch((err) => console.error("Link worker crashed:", err));
+  startResurfaceWorker().catch((err) => console.error("Resurface worker crashed:", err));
+  startDigestWorker().catch((err) => console.error("Digest worker crashed:", err));
   console.log("🔄 All background workers started in-process");
 });

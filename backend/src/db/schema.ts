@@ -34,6 +34,7 @@ export const users = pgTable("users", {
   razorpayId: text("razorpay_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLogin: timestamp("last_login"),
+  lastDigestSentAt: timestamp("last_digest_sent_at"),
 });
 
 // ── Items ──────────────────────────────────────────────────────────────────
