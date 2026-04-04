@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kortex Clipper</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <h1>Kortex</h1>
+      <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+    </header>
+
+    <!-- Error/Notice Alert -->
+    <div id="alertBox" class="alert hidden"></div>
+
+    <!-- Login View -->
+    <div id="loginView" class="view hidden">
+      <h2>Log in to your account</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required placeholder="you@example.com">
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn primary" id="loginSubmitBtn">Log In</button>
+      </form>
+    </div>
+
+    <!-- Clipper View -->
+    <div id="clipperView" class="view hidden">
+      <div class="tabs">
+        <button class="tab active" data-target="urlForm">Save URL</button>
+        <button class="tab" data-target="noteForm">Quick Note</button>
+      </div>
+
+      <form id="urlForm" class="tab-content active">
+        <div class="input-group">
+          <label>Current Page</label>
+          <div class="current-url">
+            <span id="pageTitle" class="truncate">Loading...</span>
+            <small id="pageUrl" class="truncate">...</small>
+          </div>
+        </div>
+        <button type="submit" class="btn primary w-full" id="saveUrlBtn">Save Page to Kortex</button>
+      </form>
+
+      <form id="noteForm" class="tab-content hidden">
+        <div class="input-group">
+          <textarea id="noteContent" rows="4" placeholder="Jot down a quick thought..." required></textarea>
+        </div>
+        <button type="submit" class="btn primary w-full" id="saveNoteBtn">Save Note</button>
+      </form>
+    </div>
+
+    <!-- Settings View -->
+    <div id="settingsView" class="view hidden">
+      <h2>Settings</h2>
+      <button id="logoutBtn" class="btn danger mt">Log Out</button>
+      <button id="backBtn" class="btn secondary mt">Back</button>
+    </div>
+    
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
