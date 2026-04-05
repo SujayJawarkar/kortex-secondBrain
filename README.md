@@ -329,13 +329,13 @@ Embed Worker
 - [x] Knowledge graph
 - [x] Real-time SSE updates
 - [x] Dark / light mode
-- [ ] Item detail drawer
-- [ ] Daily resurfacing digest
+- [x] Item detail drawer
+- [x] Daily resurfacing digest
 - [ ] Razorpay billing
 - [x] Browser extension (Chrome)
 - [ ] YouTube transcript ingestion
 - [ ] AI chat over knowledge base (RAG)
-- [ ] Team workspaces
+- [x] Tweet Save from Extension
 - [ ] Mobile app
 
 ---
@@ -424,7 +424,10 @@ On first launch the extension will ask you to sign in.
 3. Type or paste your note
 4. Click **Save**
 
-
+### Save a Tweet
+1. Open x.com & Sign in
+2. Near the tweet's share button you will see the Kortex icon
+3. Click the icon and the extension will automatically save it as url in Kortex
 
 ---
 
