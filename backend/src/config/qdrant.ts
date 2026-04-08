@@ -9,10 +9,3 @@ export const qdrant = new QdrantClient({
   https: true,
   checkCompatibility: false,
 });
-
-/* export const qdrant = new QdrantClient({
-  url: process.env.QDRANT_URL!,
-  apiKey: process.env.QDRANT_API_KEY!,
-  checkCompatibility: false,
-});
- */

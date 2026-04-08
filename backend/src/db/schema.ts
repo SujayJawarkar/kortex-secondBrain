@@ -10,7 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-// ── Enums ──────────────────────────────────────────────────────────────────
+//Enums
 export const planEnum = pgEnum("plan", ["free", "pro"]);
 export const sourceTypeEnum = pgEnum("source_type", ["url", "pdf", "note"]);
 export const statusEnum = pgEnum("status", [
@@ -25,7 +25,7 @@ export const linkTypeEnum = pgEnum("link_type", [
   "manual",
 ]);
 
-// ── Users ──────────────────────────────────────────────────────────────────
+//Users
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -37,7 +37,7 @@ export const users = pgTable("users", {
   lastDigestSentAt: timestamp("last_digest_sent_at"),
 });
 
-// ── Items ──────────────────────────────────────────────────────────────────
+// Items 
 export const items = pgTable(
   "items",
   {
@@ -67,7 +67,7 @@ export const items = pgTable(
   }),
 );
 
-// ── Chunks ─────────────────────────────────────────────────────────────────
+//Chunks 
 export const chunks = pgTable(
   "chunks",
   {
@@ -83,7 +83,7 @@ export const chunks = pgTable(
   }),
 );
 
-// ── Item Tags ──────────────────────────────────────────────────────────────
+//Item Tags
 export const itemTags = pgTable(
   "item_tags",
   {
@@ -99,7 +99,7 @@ export const itemTags = pgTable(
   }),
 );
 
-// ── Item Links (knowledge graph edges) ────────────────────────────────────
+//Item Links 
 export const itemLinks = pgTable(
   "item_links",
   {
@@ -133,7 +133,7 @@ export const itemLinks = pgTable(
   }),
 );
 
-// ── Resurface Scores ───────────────────────────────────────────────────────
+//Resurface Scores
 export const resurfaceScores = pgTable(
   "resurface_scores",
   {

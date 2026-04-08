@@ -2,7 +2,7 @@ import { db } from "../db";
 import { items, resurfaceScores, itemTags, users } from "../db/schema";
 import { eq, and, inArray, sql, desc } from "drizzle-orm";
 
-const DECAY_HALF_LIFE_DAYS = 7; // score halves every 7 days without review
+const DECAY_HALF_LIFE_DAYS = 7;
 const TOP_N = 5;
 
 export class ResurfaceService {
@@ -146,13 +146,13 @@ export class ResurfaceService {
       // fallback in case of race condition
       return item
         ? {
-            id: item.id,
-            title: item.title,
-            summary: item.summary,
-            sourceType: item.sourceType,
-            tags: tagMap.get(item.id) ?? [],
-            decayScore: Math.round(s.decayScore * 100) / 100,
-          }
+          id: item.id,
+          title: item.title,
+          summary: item.summary,
+          sourceType: item.sourceType,
+          tags: tagMap.get(item.id) ?? [],
+          decayScore: Math.round(s.decayScore * 100) / 100,
+        }
         : null;
     }).filter((x): x is NonNullable<typeof x> => x !== null);
   }

@@ -84,7 +84,7 @@ export class AuthService {
 
     if (!updated) throw new Error("User not found");
 
-    // Issue a fresh token with the pro plan claim
+    // Issue a fresh token with the pro plan 
     const token = this.signToken(updated);
     return { user: updated, token };
   }

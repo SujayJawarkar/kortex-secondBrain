@@ -26,7 +26,6 @@ export class EmbeddingService {
     const pipe = await getLocalPipeline();
     const results: number[][] = [];
 
-    // Evaluate sequentially to prevent high RAM spikes on tiny servers
     for (const text of texts) {
       const output = await pipe(text, {
         pooling: "mean",

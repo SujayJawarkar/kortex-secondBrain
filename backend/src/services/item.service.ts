@@ -45,7 +45,7 @@ export class ItemService {
       }
     }
 
-    // Insert item with placeholder content (workers fill this in)
+    // Insert item with placeholder content   
     const [item] = await db
       .insert(items)
       .values({

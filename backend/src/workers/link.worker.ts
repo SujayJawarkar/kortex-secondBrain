@@ -25,7 +25,6 @@ async function processMessage(data: Record<string, string>) {
   console.log(`Computing links for item ${itemId}`);
 
   try {
-    // Fetch the new item
     const [item] = await db
       .select()
       .from(items)
@@ -34,14 +33,10 @@ async function processMessage(data: Record<string, string>) {
 
     if (!item) throw new Error(`Item ${itemId} not found`);
 
-    // Embed the item title + summary as a single query vector
     const queryText = `${item.title} ${item.summary || item.contentMd.slice(0, 500)}`;
     const [queryVec] = await embeddingService.embed([queryText]);
 
-    // Search Qdrant for similar chunks
     const hits = await qdrantService.search(userId, queryVec, 50);
-
-    // Group hits by item_id, take best score per item
     const itemScores: Record<string, number> = {};
     for (const hit of hits) {
       const hitItemId = hit.payload?.item_id as string;
@@ -50,20 +45,16 @@ async function processMessage(data: Record<string, string>) {
         itemScores[hitItemId] = hit.score;
       }
     }
-    // Logging the Similarity Scores
-    // console.log("Similarity scores:", JSON.stringify(itemScores, null, 2));
 
-    // Filter by minimum similarity threshold
     const strongLinks = Object.entries(itemScores)
       .filter(([, score]) => score >= MIN_SIMILARITY)
-      .slice(0, 10); // max 10 links per item
+      .slice(0, 10);
 
     if (strongLinks.length === 0) {
       console.log(`No strong links found for item ${itemId}`);
       return;
     }
 
-    // Insert links (both directions)
     for (const [targetId, similarity] of strongLinks) {
       await db
         .insert(itemLinks)

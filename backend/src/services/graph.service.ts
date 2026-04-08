@@ -20,7 +20,7 @@ export class GraphService {
 
     const itemIds = userItems.map((i) => i.id);
 
-    // Fetch tags — guard against empty array
+    // Fetch tags
     const tagMap: Record<string, string[]> = {};
 
     if (itemIds.length > 0) {
@@ -39,14 +39,14 @@ export class GraphService {
     const edges =
       itemIds.length > 0
         ? await db
-            .select({
-              sourceId: itemLinks.sourceId,
-              targetId: itemLinks.targetId,
-              similarity: itemLinks.similarity,
-              linkType: itemLinks.linkType,
-            })
-            .from(itemLinks)
-            .where(eq(itemLinks.userId, userId))
+          .select({
+            sourceId: itemLinks.sourceId,
+            targetId: itemLinks.targetId,
+            similarity: itemLinks.similarity,
+            linkType: itemLinks.linkType,
+          })
+          .from(itemLinks)
+          .where(eq(itemLinks.userId, userId))
         : [];
 
     // Build nodes
