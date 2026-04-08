@@ -114,14 +114,20 @@ export async function startWorker() {
       if (!results) continue;
 
       for (const [, messages] of results) {
-        for (const [msgId, fields] of messages) {
-          const data: Record<string, string> = {};
-          for (let i = 0; i < fields.length; i += 2) {
-            data[fields[i]] = fields[i + 1];
-          }
-          await processMessage(data);
-          await redis.xack(STREAM, GROUP, msgId);
-        }
+        await Promise.all(
+          messages.map(async ([msgId, fields]) => {
+            try {
+              const data: Record<string, string> = {};
+              for (let i = 0; i < fields.length; i += 2) {
+                data[fields[i]] = fields[i + 1];
+              }
+              await processMessage(data);
+              await redis.xack(STREAM, GROUP, msgId);
+            } catch (err: any) {
+              console.error(`Error processing message ${msgId}:`, err.message);
+            }
+          })
+        );
       }
     } catch (err: any) {
       console.error("Link worker error:", err.message);

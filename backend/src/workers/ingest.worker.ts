@@ -94,18 +94,24 @@ export async function startWorker() {
       if (!results) continue;
 
       for (const [, messages] of results) {
-        for (const [msgId, fields] of messages) {
-          // Convert flat array to object
-          const data: Record<string, string> = {};
-          for (let i = 0; i < fields.length; i += 2) {
-            data[fields[i]] = fields[i + 1];
-          }
+        await Promise.all(
+          messages.map(async ([msgId, fields]) => {
+            try {
+              // Convert flat array to object
+              const data: Record<string, string> = {};
+              for (let i = 0; i < fields.length; i += 2) {
+                data[fields[i]] = fields[i + 1];
+              }
 
-          await processMessage(msgId, data);
+              await processMessage(msgId, data);
 
-          // Acknowledge message
-          await redis.xack(STREAM, GROUP, msgId);
-        }
+              // Acknowledge message
+              await redis.xack(STREAM, GROUP, msgId);
+            } catch (err: any) {
+              console.error(`Error processing message ${msgId}:`, err.message);
+            }
+          }),
+        );
       }
     } catch (err: any) {
       console.error("Worker error:", err.message);
