@@ -22,7 +22,9 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { useAuthStore } from "../store/auth.store";
 import { useItems } from "../hooks/useItems";
-import PaymentModal from "../components/billing/PaymentModal";
+import { billingApi } from "../api/billing";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const FREE_LIMIT = 100;
 
@@ -107,9 +109,57 @@ const LOCKED_FREE_FEATURES = [
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function UpgradePage() {
-  const { user } = useAuthStore();
+  const { user, setAuth } = useAuthStore();
   const { data: items } = useItems();
-  const [payOpen, setPayOpen] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  const handleUpgrade = async () => {
+    if (user?.plan === "pro") {
+      toast.error("You are already subscribed to Pro");
+      return;
+    }
+    
+    try {
+      setIsUpgrading(true);
+      const res = await billingApi.subscribe();
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_dummy",
+        subscription_id: res.data.subscriptionId,
+        name: "Kortex",
+        description: "Pro Subscription (Monthly)",
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await billingApi.verify({
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySubscriptionId: response.razorpay_subscription_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            toast.success("Welcome to Pro!");
+            setAuth({ ...user!, plan: verifyRes.data.plan }, window.localStorage.getItem("token") || ""); 
+            window.location.reload(); 
+          } catch (err: any) {
+            toast.error(err.response?.data?.error || "Payment verification failed");
+          }
+        },
+        theme: { color: "#4f46e5" },
+        modal: {
+          ondismiss: function() {
+            setIsUpgrading(false);
+          }
+        }
+      };
+      
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (response: any) {
+         toast.error(response.error.description);
+      });
+      rzp.open();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to initialize checkout");
+      setIsUpgrading(false);
+    }
+  };
 
   const isPro = user?.plan === "pro";
   const usedCount = items?.length ?? 0;
@@ -247,11 +297,12 @@ export default function UpgradePage() {
 
                 <Button
                   size="sm"
+                  disabled={isUpgrading}
                   className="shrink-0 bg-gradient-to-r from-brand-600 to-violet-600 hover:from-brand-700 hover:to-violet-700 text-white border-0 shadow-lg shadow-brand-500/20"
                   id="banner-upgrade-btn"
-                  onClick={() => setPayOpen(true)}
+                  onClick={handleUpgrade}
                 >
-                  <Crown className="w-3.5 h-3.5 mr-1.5" />
+                  {isUpgrading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Crown className="w-3.5 h-3.5 mr-1.5" />}
                   Upgrade to Pro
                 </Button>
               </div>
@@ -363,12 +414,13 @@ export default function UpgradePage() {
                     ) : (
                       <Button
                         size="sm"
+                        disabled={isUpgrading}
                         id="pro-card-upgrade-btn"
                         className="w-full text-white border-0 shadow-lg"
                         style={{ background: "rgb(var(--brand))" }}
-                        onClick={() => setPayOpen(true)}
+                        onClick={handleUpgrade}
                       >
-                        <Crown className="w-3.5 h-3.5 mr-1.5" />
+                        {isUpgrading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Crown className="w-3.5 h-3.5 mr-1.5" />}
                         Upgrade to Pro — ₹299/mo
                       </Button>
                     )}
@@ -422,9 +474,6 @@ export default function UpgradePage() {
 
         </div>
       </div>
-
-      {/* Payment modal — rendered into document.body via portal */}
-      <PaymentModal open={payOpen} onClose={() => setPayOpen(false)} />
     </AppLayout>
   );
 }

@@ -11,9 +11,10 @@ import {
   Eye,
   EyeOff,
   Shield,
+  FileText,
   AlertTriangle,
 } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import AppLayout from "../components/layout/AppLayout";
 import { Button } from "../components/ui/button";
@@ -21,6 +22,7 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useAuthStore } from "../store/auth.store";
 import { authApi } from "../api/auth";
+import { billingApi } from "../api/billing";
 
 // ── Section card shell ───────────────────────────────────────────────────────
 function Section({
@@ -104,6 +106,52 @@ function PasswordInput({
   );
 }
 
+// ── Billing history ────────────────────────────────────────────────────────
+function BillingHistory() {
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ["billing-history"],
+    queryFn: async () => {
+      const res = await billingApi.getHistory();
+      return res.data;
+    },
+  });
+
+  if (isLoading) {
+    return <div className="py-4 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-brand-500" /></div>;
+  }
+
+  if (!invoices || invoices.length === 0) {
+    return <p className="text-sm text-muted-foreground py-2">No past invoices available.</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {invoices.map((inv: any) => (
+        <div key={inv.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-border bg-muted/20">
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              ₹{(inv.amount / 100).toFixed(2)} — {inv.description || "Kortex Pro Plan Renewal"}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Issued on {new Date(inv.issued_at * 1000).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 mt-3 sm:mt-0">
+            <Badge variant={inv.status === "paid" ? "default" : "secondary"} className={inv.status === "paid" ? "bg-emerald-500 hover:bg-emerald-600 text-white uppercase text-[10px]" : "uppercase text-[10px]"}>
+              {inv.status}
+            </Badge>
+            {inv.short_url && (
+              <a href={inv.short_url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand-500 hover:text-brand-600 dark:hover:text-brand-400">
+                View PDF
+              </a>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Main Settings Page ───────────────────────────────────────────────────────
 export default function SettingsPage() {
   const { user, clearAuth } = useAuthStore();
@@ -122,8 +170,8 @@ export default function SettingsPage() {
   const isPro = user?.plan === "pro";
   const memberSince = (user as any)?.createdAt
     ? new Date((user as any).createdAt).toLocaleDateString("en-IN", {
-        day: "numeric", month: "long", year: "numeric",
-      })
+      day: "numeric", month: "long", year: "numeric",
+    })
     : "—";
 
   // ── Change password mutation ─────────────────────────────────────────────
@@ -219,11 +267,10 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    isPro
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center ${isPro
                       ? "bg-amber-100 dark:bg-amber-900/30"
                       : "bg-brand-50 dark:bg-brand-950/40"
-                  }`}
+                    }`}
                 >
                   {isPro ? (
                     <Crown className="w-5 h-5 text-amber-500" />
@@ -264,14 +311,12 @@ export default function SettingsPage() {
               ].map(({ label, included }) => (
                 <div key={label} className="flex items-center gap-2.5">
                   <CheckCircle2
-                    className={`w-3.5 h-3.5 shrink-0 ${
-                      included ? "text-emerald-500" : "text-muted-foreground/30"
-                    }`}
+                    className={`w-3.5 h-3.5 shrink-0 ${included ? "text-emerald-500" : "text-muted-foreground/30"
+                      }`}
                   />
                   <span
-                    className={`text-sm ${
-                      included ? "text-foreground" : "text-muted-foreground/50 line-through"
-                    }`}
+                    className={`text-sm ${included ? "text-foreground" : "text-muted-foreground/50 line-through"
+                      }`}
                   >
                     {label}
                   </span>
@@ -298,6 +343,17 @@ export default function SettingsPage() {
               </div>
             )}
           </Section>
+
+          {/* ── Billing History ────────────────────────────────────────────── */}
+          {isPro && (
+            <Section
+              icon={FileText}
+              title="Billing History"
+              description="View your recent invoices and renewals"
+            >
+              <BillingHistory />
+            </Section>
+          )}
 
           {/* ── Change Password ───────────────────────────────────────────── */}
           <Section
@@ -350,15 +406,14 @@ export default function SettingsPage() {
                     {[1, 2, 3, 4].map((n) => (
                       <div
                         key={n}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
-                          newPw.length >= n * 3
+                        className={`h-1 flex-1 rounded-full transition-colors ${newPw.length >= n * 3
                             ? newPw.length >= 12
                               ? "bg-emerald-500"
                               : newPw.length >= 8
-                              ? "bg-yellow-400"
-                              : "bg-red-400"
+                                ? "bg-yellow-400"
+                                : "bg-red-400"
                             : "bg-muted"
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>

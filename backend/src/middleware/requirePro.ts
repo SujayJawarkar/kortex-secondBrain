@@ -6,10 +6,13 @@ export function requirePro(
   res: Response,
   next: NextFunction,
 ) {
-  if (req.user?.plan !== "pro") {
+  const hasProPlan = req.user?.plan === "pro";
+  const hasGracePeriod = req.user?.currentPeriodEnd && req.user.currentPeriodEnd > Date.now();
+
+  if (!hasProPlan && !hasGracePeriod) {
     res.status(403).json({
       error: "Pro plan required",
-      message: "Upgrade to Pro to access this feature",
+      message: "Upgrade to Pro to access this feature.",
       upgrade_url: "/billing/subscribe",
     });
     return;
